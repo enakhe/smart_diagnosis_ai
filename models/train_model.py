@@ -24,6 +24,11 @@ test_data = load_jsonl(TEST_FILE)
 df_train = pd.DataFrame(train_data)
 df_test = pd.DataFrame(test_data)
 
+# === VECTORIZATION ===
+vectorizer = TfidfVectorizer(max_features=3000)
+X_train = vectorizer.fit_transform(df_train["input_text"])
+X_test = vectorizer.transform(df_test["input_text"])
+
 # === LABEL ENCODING ===
 label_encoder = LabelEncoder()
 y_train = label_encoder.fit_transform(df_train["output_text"])
@@ -36,7 +41,13 @@ clf.fit(X_train, y_train)
 # === EVALUATION ===
 y_pred = clf.predict(X_test)
 print("Classification Report:")
-print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
+print(classification_report(
+    y_test,
+    y_pred,
+    labels=label_encoder.transform(label_encoder.classes_),
+    target_names=label_encoder.classes_
+))
+
 
 # === SAVE ARTIFACTS ===
 joblib.dump(clf, MODEL_DIR / "model.pkl")
